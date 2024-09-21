@@ -128,7 +128,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "babaino"
+name = "babiano"
 version = "0.1.0"
 dependencies = [
  "gloo",
