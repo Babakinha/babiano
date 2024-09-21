@@ -1,0 +1,18 @@
+[package]
+name = "babaino"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+perseus = { version = "=0.4.2", features = [ "hydrate" ] }
+sycamore = "^0.8.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+web-sys = { version = "0.3.69", features = ["AudioContext", "GainNode", "AudioDestinationNode", "OscillatorNode", "AudioParam"] }
+
+[target.'cfg(engine)'.dependencies]
+tokio = { version = "1", features = [ "macros", "rt", "rt-multi-thread" ] }
+perseus-axum = { version = "=0.4.2", features = [ "dflt-server" ] }
+
+[target.'cfg(client)'.dependencies]
+gloo = "0.11.0"

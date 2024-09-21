@@ -1,0 +1,156 @@
+/* Wont change */
+:root {
+    --femboi-color: #FC6791;
+    --blue-color : #00BAFA;
+    --baba-color: #00FABA;
+
+    /* Will change in code*/
+    --interest-color: var(--baba-color);
+}
+
+/* TODO: Redo animations */
+/* Animations */
+/*
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% { 
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-200%);
+  }
+  100% { 
+    transform: translateX(0);
+  }
+}
+*/
+
+html {
+    /* TODO: Remove color banding somehow*/
+    background: linear-gradient(to bottom right, #2F2F2F, #1D1D1D);
+
+    color: #D1D1D1;
+    text-align: center;
+
+    font-family: "Kanit", sans-serif;
+    min-height: 100dvh;
+}
+
+.line {
+    margin: 3px;
+    height: 6px;
+    border-radius: 6px;
+    background-color: #111;
+}
+
+.intro-box {
+    margin: 10% 10% 0 10%;
+    text-align: left;
+
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+        "title photo"
+        "text photo";
+
+}
+
+.intro-box > img {
+    grid-area: photo;
+    align-self: center;
+    justify-self: center;
+}
+
+.home-title {
+    font-size: 2rem;
+    grid-area: title;
+    align-self: end;
+
+    /*
+    opacity: 0;
+    animation-name: slide, fade-in;
+    animation-delay: 0.5s, 0.5s;
+    animation-duration: 1s, 2s;
+    animation-fill-mode: forwards, forwards;
+    animation-timing-function: ease, ease;
+    animation-iteration-count: 1
+    */
+}
+
+.home-title > h1 {
+    margin: 0;
+}
+.home-description {
+    font-size: 1.25rem;
+    grid-area: text;
+    align-self: start;
+
+    /*
+    opacity: 0;
+    animation-name: slide, fade-in;
+    animation-delay: 2s, 2s;
+    animation-duration: 1s, 2s;
+    animation-fill-mode: forwards, forwards;
+    animation-timing-function: ease, ease;
+    animation-iteration-count: 1
+    */
+}
+
+
+@media (max-width: 66em) {
+    .intro-box {
+        justify-items: center;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        grid-template-areas:
+            "title"
+            "text"
+            "photo";
+    }
+
+    .home-title {
+        text-align: center;
+        font-size: 1.5rem;
+
+        /*
+        animation-name: fade-in;
+        animation-delay: 0.5s;
+        animation-duration: 1s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+        animation-iteration-count: 1
+        */
+    }
+
+    .home-description {
+        font-size: 1rem;
+
+        /*
+        animation-name: fade-in;
+        animation-delay: 2s;
+        animation-duration: 1s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease;
+        animation-iteration-count: 1
+        */
+    }
+}
+
+.blob {
+    background-color: var(--interest-color);
+    transition: .5s background-color ease;
+
+    /* TODO: Use radial gradient? blur might be expensive */
+    filter: blur(50px);
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    position: fixed;
+    z-index: -100;
+}
