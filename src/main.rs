@@ -1,5 +1,6 @@
 mod piano;
 mod key;
+mod key_audio;
 
 use perseus::prelude::*;
 

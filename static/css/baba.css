@@ -30,6 +30,28 @@
 }
 */
 
+.white-note {
+    width: 50px;
+    background-color: #a2a2a2;
+    color: #121212;
+}
+
+.black-note {
+    width: 25px;
+    height: 50%;
+    background-color: #222222;
+    color: #a2a2a2;
+}
+.black-note.playing {
+    background-color: #020202;
+    color: #a2a2a2;
+}
+
+.white-note.playing {
+    background-color: #424242;
+    color: #121212;
+}
+
 html {
     /* TODO: Remove color banding somehow*/
     background: linear-gradient(to bottom right, #2F2F2F, #1D1D1D);
