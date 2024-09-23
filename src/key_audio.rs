@@ -1,4 +1,4 @@
-use sycamore::{futures::spawn_local, prelude::*};
+use sycamore::prelude::*;
 
 #[derive(Prop)]
 pub struct BabianoKeyAudioProps<'a, G: Html> {
@@ -49,18 +49,6 @@ pub fn BabianoKeyAudio<'a, G: Html>(cx: Scope<'a>, props: BabianoKeyAudioProps<'
         .connect_with_audio_node(&master_volume)
         .unwrap();
 
-    // Update file
-    let file = create_rc_signal(None);
-    create_effect(cx, {
-        let file = file.clone();
-        move || {
-            props.file.track();
-            let binding = props.file.get();
-            let value = binding.as_ref().clone();
-            file.set(value);
-        }
-    });
-
     // Audio buffer (aka sample) (connects to audio node)
     #[cfg(client)]
     let audio_buffer = create_rc_signal(None);
@@ -70,19 +58,22 @@ pub fn BabianoKeyAudio<'a, G: Html>(cx: Scope<'a>, props: BabianoKeyAudioProps<'
         #[cfg(client)]
         let audio_buffer = audio_buffer.clone();
         move || {
-            file.track();
-            let binding = props.file.get();
-            let value = binding.as_ref().clone();
+            props.file.track();
 
+            #[cfg(client)]
+            use sycamore::futures::spawn_local;
             #[cfg(client)]
             spawn_local({
                 use web_sys::wasm_bindgen::JsCast;
                 let context = context.clone();
                 let audio_buffer = audio_buffer.clone();
                 let fallback_href = props.fallback_href.clone();
+
+                let binding = props.file.get();
+                let audio_file = binding.as_ref().clone();
                 async move {
                     // If we have a file use it, else fetch and use fallback
-                    if let Some(file) = value {
+                    if let Some(file) = audio_file {
                         // Turn into ArrayBuffer
                         let audio_file_promise = file.array_buffer();
                         let binding = sycamore::futures::JsFuture::from(audio_file_promise)
@@ -106,10 +97,11 @@ pub fn BabianoKeyAudio<'a, G: Html>(cx: Scope<'a>, props: BabianoKeyAudioProps<'
                         let fallback_href = if fallback_href.starts_with("http") {
                             fallback_href
                         } else {
-                            format!("{}{fallback_href}", gloo::utils::window().origin())
+                            format!("{}/{fallback_href}", gloo::utils::window().origin())
                         };
 
                         // Fetch audio
+                        gloo::console::log!(fallback_href.clone());
                         let bytes = reqwest::get(fallback_href)
                             .await
                             .unwrap()

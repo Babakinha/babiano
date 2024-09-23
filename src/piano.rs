@@ -1,4 +1,4 @@
-use crate::key::*;
+// use crate::key::*;
 use crate::key_audio::*;
 use perseus::prelude::*;
 use sycamore::prelude::*;
@@ -15,16 +15,17 @@ fn piano_page<G: Html>(cx: Scope, static_path: &str) -> View<G> {
     let sample = create_signal(cx, None);
 
     // When a file is selected
+    #[cfg(client)]
     let on_change = move |event: web_sys::Event| {
         use web_sys::wasm_bindgen::JsCast;
         let binding = event.target().unwrap();
-        #[cfg(client)]
         let input_node = binding.dyn_ref::<web_sys::HtmlInputElement>().unwrap();
-        #[cfg(client)]
         if let Some(file) = input_node.files().unwrap().get(0) {
             sample.set(Some(file));
         }
     };
+    #[cfg(engine)]
+    let on_change = move |_| {};
 
     // Mute button actually
     let on_mute = move |_| {

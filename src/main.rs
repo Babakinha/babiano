@@ -1,26 +1,29 @@
 mod piano;
-mod key;
+// mod key;
 mod key_audio;
 
 use perseus::prelude::*;
 
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
-    PerseusApp::new()
-        .template(piano::get_template("index", None))
+    if let Some(path) = option_env!("SINGLEPAGE") {
+        PerseusApp::new()
+            .template(piano::get_template(path, Some(path.to_string())))
 
-        .error_views(ErrorViews::unlocalized_development_default())
-        //TODO: Better localization
-        .index_view_str(INDEX_VIEW)
-        .static_dir("./static")
-        // Public stuff
-        //TODO: Automate this?
-        .static_alias("/favicon.ico", "./public/favicon.ico")
-        .static_alias("/robots.txt", "./public/robots.txt")
-        // Github Pages stuff
-        // Idk if this is needed for gh pages to work but... why not keep it
-        .static_alias("/CNAME", "./CNAME")
-        .static_alias("/.nojekyll", "./.nojekyll")
+            .static_dir("")
+            .index_view_str(INDEX_VIEW)
+            .error_views(ErrorViews::unlocalized_development_default())
+    } else {
+        PerseusApp::new()
+            .template(piano::get_template("index", None))
+
+            .static_dir("./static")
+            .static_alias("/favicon.ico", "./public/favicon.ico")
+            .static_alias("/robots.txt", "./public/robots.txt")
+
+            .index_view_str(INDEX_VIEW)
+            .error_views(ErrorViews::unlocalized_development_default())
+    }
 }
 
 // Just to add lang="en" :3
