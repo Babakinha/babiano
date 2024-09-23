@@ -7,7 +7,8 @@ use perseus::prelude::*;
 #[perseus::main(perseus_axum::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
     PerseusApp::new()
-        .template(piano::get_template())
+        .template(piano::get_template("index", None))
+
         .error_views(ErrorViews::unlocalized_development_default())
         //TODO: Better localization
         .index_view_str(INDEX_VIEW)

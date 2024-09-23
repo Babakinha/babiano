@@ -1,3 +1,4 @@
+// OLD, DONT USE >.<
 use sycamore::prelude::*;
 
 #[derive(Prop)]
@@ -14,8 +15,7 @@ pub struct BabianoKeyProps<'a, G: Html> {
     volume: &'a ReadSignal<f32>,
 }
 
-// inline_props for the win!
-#[component()]
+#[component]
 pub fn BabianoKey<'a, G: Html>(cx: Scope<'a>, props: BabianoKeyProps<'a, G>) -> View<G> {
     let children = props.children.call(cx);
     let playing = create_rc_signal(false);
