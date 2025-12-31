@@ -1,39 +1,26 @@
-mod piano;
-// mod key;
-mod key_audio;
+#[cfg(feature = "export")]
+#[tokio::main]
+async fn main() {
+    use babiano::app::*;
+    use leptos::prelude::*;
+    use leptos_axum::generate_route_list_with_ssg;
 
-use perseus::prelude::*;
+    let conf = get_configuration(Some("Cargo.toml")).unwrap();
+    let leptos_options = conf.leptos_options;
+    std::env::set_var("LEPTOS_OUTPUT_NAME", leptos_options.output_name.to_string());
 
-#[perseus::main(perseus_axum::dflt_server)]
-pub fn main<G: Html>() -> PerseusApp<G> {
-    if let Some(path) = option_env!("SINGLEPAGE") {
-        PerseusApp::new()
-            .template(piano::get_template(path, Some(path.to_string())))
+    let (_, static_routes) = generate_route_list_with_ssg({
+        let leptos_options = leptos_options.clone();
+        move || shell(leptos_options.clone())
+    });
 
-            .static_dir("")
-            .index_view_str(INDEX_VIEW)
-            .error_views(ErrorViews::unlocalized_development_default())
-    } else {
-        PerseusApp::new()
-            .template(piano::get_template("index", None))
-
-            .static_dir("./static")
-            .static_alias("/favicon.ico", "./public/favicon.ico")
-            .static_alias("/robots.txt", "./public/robots.txt")
-
-            .index_view_str(INDEX_VIEW)
-            .error_views(ErrorViews::unlocalized_development_default())
-    }
+    static_routes.generate(&leptos_options).await;
 }
 
-// Just to add lang="en" :3
-static INDEX_VIEW: &str = r#"
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <body>
-        <div id="root"></div>
-    </body>
-</html>"#;
+
+#[cfg(not(feature = "export"))]
+pub fn main() {
+    // no client-side main function
+    // unless we want this to work with e.g., Trunk for pure client-side testing
+    // see lib.rs for hydration function instead
+}

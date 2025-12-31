@@ -1,119 +1,89 @@
-// use crate::key::*;
-use crate::key_audio::*;
-use perseus::prelude::*;
-use sycamore::prelude::*;
+use crate::key_audio::BabianoKeyAudio;
+use leptos::{leptos_dom::logging::console_log, prelude::*};
+use leptos_meta::{Link, Meta, Title};
 
-fn piano_page<G: Html>(cx: Scope, static_path: &str) -> View<G> {
-    let volume_slider = create_signal(cx, String::from("10"));
-    let volume_normal = create_memo(cx, || {
-        (*volume_slider.get()).parse::<f32>().unwrap() / 100.0
+#[component]
+pub fn BabianoPage() -> impl IntoView {
+    let (volume, set_volume) = signal(50.0);
+    let (tune, set_tune) = signal(50.0);
+    let (file_data, set_file_data) = signal(Vec::new());
+
+
+
+    Effect::new(move |_| {
+        console_log(&format!("Volume: {}; Tune: {}", volume.get(), tune.get()));
     });
 
-    let tune_input = create_signal(cx, String::from("10"));
-    let tune = create_memo(cx, || (*tune_input.get()).parse::<f32>().unwrap_or(0.0));
+    #[cfg(feature = "hydrate")]
+    let on_file = move |ev: web_sys::Event| {
+        console_log(&format!("ev: {}", event_target_value(&ev)));
 
-    let sample = create_signal(cx, None);
-
-    // When a file is selected
-    #[cfg(client)]
-    let on_change = move |event: web_sys::Event| {
         use web_sys::wasm_bindgen::JsCast;
-        let binding = event.target().unwrap();
+        let binding = ev.target().unwrap();
         let input_node = binding.dyn_ref::<web_sys::HtmlInputElement>().unwrap();
         if let Some(file) = input_node.files().unwrap().get(0) {
-            sample.set(Some(file));
+            use leptos::task::spawn_local;
+
+            console_log(&format!("{file:?}"));
+            let promise = file.array_buffer();
+            let future = wasm_bindgen_futures::JsFuture::from(promise);
+            spawn_local(async move {
+                if let Ok(js_value) = future.await {
+                    //TODO: There is prob a better way to do this, like passing the buffer directly
+                    let test = web_sys::js_sys::Uint8Array::new(&js_value);
+                    set_file_data.set(test.to_vec());
+                }
+            });
         }
     };
-    #[cfg(engine)]
-    let on_change = move |_| {};
 
-    // Mute button actually
-    let on_mute = move |_| {
-        #[cfg(client)]
-        if &*volume_slider.get() == "0" {
-            volume_slider.set(String::from("10"));
-        } else {
-            volume_slider.set(String::from("0"));
-        }
-    };
+    #[cfg(feature = "export")]
+    let on_file = move |_| {};
 
-    view! {cx,
-        button(on:click=on_mute) { "Mute ><" }
+    let volume_memo = Memo::new(move |_| volume.get() as f32 / 100.0);
 
-        label(for="volume") { "Volume:" }
-        input(type="range", id="volume", min="0", max="100", bind:value=volume_slider, class="slider")
-        label(for="tune") { "Tune:" }
-        input(type="range", id="tune", min="-1000", step="100", max="1000", bind:value=tune_input, class="slider")
-        label(for="sample") { "Sample:" }
-        input(type="file", id="sample", on:change=on_change)
-        /*
-        div(style="padding-top: 300px; padding-bottom: 300px; justify-content: center; height: 120px; display:flex;") {
-            BabianoKey(frequency=261.63, volume=volume_normal, keyboard_key=String::from("a")) {"C"}
-            BabianoKey(frequency=277.18, volume=volume_normal, keyboard_key=String::from("w")) {"C#"}
-            BabianoKey(frequency=293.66, volume=volume_normal, keyboard_key=String::from("s")) {"D"}
-            BabianoKey(frequency=311.13, volume=volume_normal, keyboard_key=String::from("e")) {"D#"}
-            BabianoKey(frequency=329.63, volume=volume_normal, keyboard_key=String::from("d")) {"E"}
-            BabianoKey(frequency=349.23, volume=volume_normal, keyboard_key=String::from("f")) {"F"}
-            BabianoKey(frequency=369.99, volume=volume_normal, keyboard_key=String::from("t")) {"F#"}
-            BabianoKey(frequency=392.00, volume=volume_normal, keyboard_key=String::from("g")) {"G"}
-            BabianoKey(frequency=415.30, volume=volume_normal, keyboard_key=String::from("y")) {"G#"}
-            BabianoKey(frequency=440.00, volume=volume_normal, keyboard_key=String::from("h")) {"A"}
-            BabianoKey(frequency=466.16, volume=volume_normal, keyboard_key=String::from("u")) {"A#"}
-            BabianoKey(frequency=493.88, volume=volume_normal, keyboard_key=String::from("j")) {"B"}
-            BabianoKey(frequency=523.25, volume=volume_normal, keyboard_key=String::from("k")) {"C"}
-            BabianoKey(frequency=587.33, volume=volume_normal, keyboard_key=String::from("l")) {"D"}
-        }
-        */
-        div(style="padding-top: 300px; padding-bottom: 300px; justify-content: center; height: 120px; display:flex;") {
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 100.0), volume=volume_normal, keyboard_key=String::from("a")) {"C"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 200.0), volume=volume_normal, keyboard_key=String::from("w")) {"C#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 300.0), volume=volume_normal, keyboard_key=String::from("s")) {"D"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 400.0), volume=volume_normal, keyboard_key=String::from("e")) {"D#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 500.0), volume=volume_normal, keyboard_key=String::from("d")) {"E"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 600.0), volume=volume_normal, keyboard_key=String::from("f")) {"F"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 700.0), volume=volume_normal, keyboard_key=String::from("t")) {"F#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 800.0), volume=volume_normal, keyboard_key=String::from("g")) {"G"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 900.0), volume=volume_normal, keyboard_key=String::from("y")) {"G#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1000.0), volume=volume_normal, keyboard_key=String::from("h")) {"A"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1100.0), volume=volume_normal, keyboard_key=String::from("u")) {"A#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1200.0), volume=volume_normal, keyboard_key=String::from("j")) {"B"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1300.0), volume=volume_normal, keyboard_key=String::from("k")) {"C"}
-            BabianoKeyAudio(class="black-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1400.0), volume=volume_normal, keyboard_key=String::from("i")) {"C#"}
-            BabianoKeyAudio(class="white-note".to_string(), fallback_href=format!("{static_path}/meow.wav"), file=sample, detune=create_memo(cx, || *tune.get() + 1500.0), volume=volume_normal, keyboard_key=String::from("l")) {"D"}
-        }
-        p { "I love you ❤️" }
+    view! {
+        // Title and description
+        <Title text="~UwU What is this~" />
+        <Meta name="description" content="Cool piano -w-" />
+
+        // Font
+        <Link rel="preconnect" href="https://fonts.googleapis.com" />
+        <Link rel="preconnect" href="https://fonts.gstatic.com" attr:crossorigin />
+        <Link rel="preload" attr:r#as="style" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap" />
+        <Link rel="stylesheet" media="print" attr:onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap" />
+        <noscript>
+            <Link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap" />
+        </noscript>
+
+        // Main
+        <h1> "Babiano Page! :3" </h1>
+
+        <label for="volume"> "Volume:" </label>
+        <input type="range" id="volume" min="0" max="100" prop:value=volume on:input=move |ev| set_volume.set(event_target_value(&ev).parse().unwrap()) class="slider" />
+        <label for="tune"> "Tune:" </label>
+        <input type="range" id="tune" min="-1000" step="100" max="1000" prop:value=tune on:input=move |ev| set_tune.set(event_target_value(&ev).parse().unwrap()) class="slider" />
+        <label for="sample"> "Sample:" </label>
+        <input type="file" id="sample" on:change=on_file />
+        <div style="padding-top: 300px; padding-bottom: 300px; justify-content: center; height: 120px; display:flex;">
+            <BabianoKeyAudio class="white-note" keyboard_key="a" file=file_data detune=Memo::new(move |_| tune.get() + 100.0) volume=volume_memo > "a" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="w" file=file_data detune=Memo::new(move |_| tune.get() + 200.0) volume=volume_memo > "w" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="s" file=file_data detune=Memo::new(move |_| tune.get() + 300.0) volume=volume_memo > "s" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="e" file=file_data detune=Memo::new(move |_| tune.get() + 400.0) volume=volume_memo > "e" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="d" file=file_data detune=Memo::new(move |_| tune.get() + 500.0) volume=volume_memo > "d" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="f" file=file_data detune=Memo::new(move |_| tune.get() + 600.0) volume=volume_memo > "f" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="t" file=file_data detune=Memo::new(move |_| tune.get() + 700.0) volume=volume_memo > "t" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="g" file=file_data detune=Memo::new(move |_| tune.get() + 800.0) volume=volume_memo > "g" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="y" file=file_data detune=Memo::new(move |_| tune.get() + 900.0) volume=volume_memo > "y" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="h" file=file_data detune=Memo::new(move |_| tune.get() + 1000.0) volume=volume_memo > "h" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="u" file=file_data detune=Memo::new(move |_| tune.get() + 1100.0) volume=volume_memo > "u" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="j" file=file_data detune=Memo::new(move |_| tune.get() + 1200.0) volume=volume_memo > "j" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="k" file=file_data detune=Memo::new(move |_| tune.get() + 1300.0) volume=volume_memo > "k" </BabianoKeyAudio>
+            <BabianoKeyAudio class="black-note" keyboard_key="i" file=file_data detune=Memo::new(move |_| tune.get() + 1400.0) volume=volume_memo > "i" </BabianoKeyAudio>
+            <BabianoKeyAudio class="white-note" keyboard_key="l" file=file_data detune=Memo::new(move |_| tune.get() + 1500.0) volume=volume_memo > "l" </BabianoKeyAudio>
+        </div>
+
+        // Footer
+        <p> "I love you ❤️" </p>
     }
-}
-
-#[engine_only_fn]
-fn head(cx: Scope, static_path: String) -> View<SsrNode> {
-    view! { cx,
-        title { "~UwU What is this~" }
-
-        meta(name="description", content="Cool piano -w-")
-
-        link(rel="preconnect", href="https://fonts.googleapis.com")
-        link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=true)
-        link(rel="preload", as="style", href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap")
-        link(rel="stylesheet", media="print", onload="this.media='all'", href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap")
-        noscript {
-            link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,700;1,400&display=swap")
-        }
-
-        link(href=format!("{static_path}/css/baba.css"), rel="stylesheet")
-    }
-}
-
-pub fn get_template<G: Html>(page_path: &str, custom_static: Option<String>) -> Template<G> {
-    let static_path = custom_static.unwrap_or_else(|| String::from("/.perseus/static"));
-
-    let template = Template::build(page_path).view({
-        let static_path = static_path.clone();
-        move |cx| piano_page(cx, &static_path)
-    });
-
-    #[cfg(engine)]
-    let template = template.head(move |cx| head(cx, static_path.clone()));
-
-    template.build()
 }

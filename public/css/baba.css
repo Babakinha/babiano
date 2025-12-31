@@ -42,12 +42,12 @@
     background-color: #222222;
     color: #a2a2a2;
 }
-.black-note.playing {
+.black-note.pressed {
     background-color: #020202;
     color: #a2a2a2;
 }
 
-.white-note.playing {
+.white-note.pressed {
     background-color: #424242;
     color: #121212;
 }
