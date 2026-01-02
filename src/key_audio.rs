@@ -12,7 +12,9 @@ pub fn BabianoKeyAudio(
     let (pressed, set_pressed) = signal(false);
     let pressed_memo = Memo::new(move |_| pressed.get());
 
+    #[cfg(feature = "hydrate")]
     use std::cell::RefCell;
+    #[cfg(feature = "hydrate")]
     use std::rc::Rc;
 
     #[cfg(feature = "hydrate")]
@@ -133,8 +135,18 @@ pub fn BabianoKeyAudio(
         }
     });
 
+    // Mouse enter
+    #[cfg(feature = "hydrate")]
+    let on_mouseenter = move |ev: web_sys::MouseEvent| {
+        if ev.buttons() == 1 {
+            set_pressed.set(true);
+        }
+    };
+    #[cfg(feature = "export")]
+    let on_mouseenter = move |_| {};
+
     view! {
-          <button class=move || {format!("{class} {}", if pressed_memo.get() {"pressed"} else {""})} on:mousedown=move |_| set_pressed.set(true) on:mouseup=move |_| set_pressed.set(false) on:mouseleave=move |_| set_pressed.set(false) /* class=format!("{}{}", props.class, if *playing.get() { " playing" } else { "" }) on:mousedown=on_mousedown, on:mouseup=on_mouseup.clone(), on:mouseleave=on_mouseup */>
+          <button class=move || {format!("{class} {}", if pressed_memo.get() {"pressed"} else {""})} on:mouseenter=on_mouseenter on:mousedown=move |_| set_pressed.set(true) on:mouseup=move |_| set_pressed.set(false) on:mouseleave=move |_| set_pressed.set(false) >
             {children()}
           </button>
     }

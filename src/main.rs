@@ -7,7 +7,6 @@ async fn main() {
 
     let conf = get_configuration(Some("Cargo.toml")).unwrap();
     let leptos_options = conf.leptos_options;
-    std::env::set_var("LEPTOS_OUTPUT_NAME", leptos_options.output_name.to_string());
 
     let (_, static_routes) = generate_route_list_with_ssg({
         let leptos_options = leptos_options.clone();

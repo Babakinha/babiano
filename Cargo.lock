@@ -155,6 +155,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
+ "gloo-net",
  "leptos",
  "leptos_axum",
  "leptos_meta",
