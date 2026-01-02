@@ -2,6 +2,7 @@ use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::*;
 use leptos_router::components::*;
+use crate::EXPORT_PATH;
 use crate::piano::BabianoPage;
 use leptos_router::static_routes::StaticRoute;
 
@@ -12,7 +13,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
             <head>
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                <HydrationScripts options islands=false/>
+                <HydrationScripts root="." options islands=false/>
                 <MetaTags/>
             </head>
             <body>
@@ -29,14 +30,14 @@ pub fn App() -> impl IntoView {
     let fallback = || view! { "Page not found ><" }.into_view();
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/babiano.css"/>
-        <Stylesheet id="baba" href="/css/baba.css"/>
+        <Stylesheet id="leptos" href="pkg/babiano.css"/>
+        <Stylesheet id="baba" href="css/baba.css"/>
         <Title text="~UwU What is this?~"/>
         <Meta name="color-scheme" content="dark light"/>
         <Router>
             <Routes fallback>
                 <Route
-                    path=path!("/")
+                    path=StaticSegment(EXPORT_PATH.unwrap_or_default())
                     view=BabianoPage
                     ssr=SsrMode::Static(StaticRoute::new())
                 />

@@ -1,7 +1,7 @@
 #[cfg(feature = "export")]
 #[tokio::main]
 async fn main() {
-    use babiano::app::*;
+    use babiano::{EXPORT_PATH, app::*};
     use leptos::prelude::*;
     use leptos_axum::generate_route_list_with_ssg;
 
@@ -14,6 +14,11 @@ async fn main() {
     });
 
     static_routes.generate(&leptos_options).await;
+
+    if let Some(path) = EXPORT_PATH {
+        let dist = leptos_options.site_root;
+        std::fs::rename(format!("{dist}/{path}.html"), format!("{dist}/index.html")).expect("Unable to rename export");
+    }
 }
 
 

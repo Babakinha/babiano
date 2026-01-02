@@ -2,6 +2,8 @@ pub mod key_audio;
 pub mod piano;
 pub mod app;
 
+pub const EXPORT_PATH: Option<&'static str> = option_env!("EXPORT_PATH");
+
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
 pub fn hydrate() {
