@@ -6,8 +6,8 @@ use leptos_meta::{Link, Meta, Title};
 
 const MEOW_SOUND_URL: &'static str = "assets/meow.wav";
 const MEOW_2_SOUND_URL: &'static str = "assets/meow_2_b4.wav";
-const PIANO_SOUND_URL: &'static str = "assets/piano_b3.wav";
-const FISH_SOUND_URL: &'static str = "assets/meow_2.wav";
+const PIANO_SOUND_URL: &'static str = "assets/piano_bb3.wav";
+const FISH_SOUND_URL: &'static str = "assets/fish.wav";
 
 #[component]
 pub fn BabianoPage() -> impl IntoView {
